@@ -1,50 +1,74 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { emojiCategories } from '../constants';
-import './styles/PlayerSelection.css';
 
-const PlayerSelection = ({ startGame }) => {
-  const [player1Category, setPlayer1Category] = useState('animals');
-  const [player2Category, setPlayer2Category] = useState('food');
+class PlayerSelection extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      player1Category: null,
+      player2Category: null
+    };
+  }
 
-  return (
-    <div className="category-selection">
-      <h2>Select Emoji Categories</h2>
-      <div className="player-selection">
-        <h3>Player 1 Category:</h3>
-        <div className="category-options">
-          {Object.keys(emojiCategories).map(category => (
-            <button 
-              key={`p1-${category}`}
-              className={player1Category === category ? 'selected' : ''}
-              onClick={() => setPlayer1Category(category)}
-            >
-              {emojiCategories[category][0]} {category}
-            </button>
-          ))}
+  handleCategoryChange = (player, category) => {
+    if (player === 1) {
+      this.setState({ player1Category: category });
+    } else {
+      this.setState({ player2Category: category });
+    }
+  };
+
+  startGame = () => {
+    const { player1Category, player2Category } = this.state;
+    this.props.startGame(player1Category, player2Category);
+  };
+
+  render() {
+    const { player1Category, player2Category } = this.state;
+
+    return (
+      <div className="category-selection">
+        <h2>Select Emoji Categories</h2>
+        <div className="player-selection">
+          <h3>Player 1 Category:</h3>
+          <div className="category-options">
+            {Object.keys(emojiCategories).map(category => (
+              <button 
+                key={`p1-${category}`}
+                className={player1Category === category ? 'selected' : ''}
+                onClick={() => this.handleCategoryChange(1, category)}
+              >
+                {emojiCategories[category][0]} {category}
+              </button>
+            ))}
+          </div>
+          {!player1Category && <p className="selection-hint">Please select a category</p>}
         </div>
-      </div>
-      <div className="player-selection">
-        <h3>Player 2 Category:</h3>
-        <div className="category-options">
-          {Object.keys(emojiCategories).map(category => (
-            <button 
-              key={`p2-${category}`}
-              className={player2Category === category ? 'selected' : ''}
-              onClick={() => setPlayer2Category(category)}
-            >
-              {emojiCategories[category][0]} {category}
-            </button>
-          ))}
+        <div className="player-selection">
+          <h3>Player 2 Category:</h3>
+          <div className="category-options">
+            {Object.keys(emojiCategories).map(category => (
+              <button 
+                key={`p2-${category}`}
+                className={player2Category === category ? 'selected' : ''}
+                onClick={() => this.handleCategoryChange(2, category)}
+              >
+                {emojiCategories[category][0]} {category}
+              </button>
+            ))}
+          </div>
+          {!player2Category && <p className="selection-hint">Please select a category</p>}
         </div>
+        <button 
+          className="start-button" 
+          onClick={this.startGame}
+          disabled={!player1Category || !player2Category}
+        >
+          Start Game
+        </button>
       </div>
-      <button 
-        className="start-button" 
-        onClick={() => startGame(player1Category, player2Category)}
-      >
-        Start Game
-      </button>
-    </div>
-  );
-};
+    );
+  }
+}
 
 export default PlayerSelection;

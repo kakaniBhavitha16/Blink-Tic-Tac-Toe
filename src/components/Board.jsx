@@ -1,13 +1,13 @@
 import React from 'react';
 import Cell from './Cell';
 import { emojiCategories, winPatterns } from '../constants';
-import './styles/Board.css';
 
-const Board = ({ gameState, setGameState }) => {
-  const { board, currentPlayer, player1, player2, winner } = gameState;
-
-  const handleCellClick = (index) => {
-    if (winner) return;
+class Board extends React.Component {
+  handleCellClick = (index) => {
+    const { gameState } = this.props;
+    const { currentPlayer, player1, player2, winner, board } = gameState;
+    
+    if (winner || !board) return;
 
     const currentPlayerData = currentPlayer === 1 ? player1 : player2;
     
@@ -39,25 +39,39 @@ const Board = ({ gameState, setGameState }) => {
     newPositions.push(index);
     newBoard[index] = randomEmoji;
 
-    // Check for winner
+    // Check for winner - now properly checks player ownership
     let newWinner = null;
     let winningCells = [];
+    
     for (let pattern of winPatterns) {
       const [a, b, c] = pattern;
-      if (newBoard[a] && newBoard[a] === newBoard[b] && newBoard[a] === newBoard[c]) {
-        if (player1.emojis.includes(newBoard[a])) {
+      if (newBoard[a] && newBoard[b] && newBoard[c]) {
+        // Check if all three belong to the same player
+        const aBelongsToPlayer1 = player1.emojis.includes(newBoard[a]);
+        const bBelongsToPlayer1 = player1.emojis.includes(newBoard[b]);
+        const cBelongsToPlayer1 = player1.emojis.includes(newBoard[c]);
+        
+        const aBelongsToPlayer2 = player2.emojis.includes(newBoard[a]);
+        const bBelongsToPlayer2 = player2.emojis.includes(newBoard[b]);
+        const cBelongsToPlayer2 = player2.emojis.includes(newBoard[c]);
+        
+        if (aBelongsToPlayer1 && bBelongsToPlayer1 && cBelongsToPlayer1) {
           newWinner = 1;
-        } else if (player2.emojis.includes(newBoard[a])) {
-          newWinner = 2;
+          winningCells = pattern;
+          break;
         }
-        winningCells = pattern;
-        break;
+        
+        if (aBelongsToPlayer2 && bBelongsToPlayer2 && cBelongsToPlayer2) {
+          newWinner = 2;
+          winningCells = pattern;
+          break;
+        }
       }
     }
 
     // Update game state
-    setGameState(prev => ({
-      ...prev,
+    const newGameState = {
+      ...gameState,
       board: newBoard,
       currentPlayer: currentPlayer === 1 ? 2 : 1,
       [currentPlayer === 1 ? 'player1' : 'player2']: {
@@ -66,42 +80,51 @@ const Board = ({ gameState, setGameState }) => {
         positions: newPositions
       },
       winner: newWinner,
-      winningCells: newWinner ? winningCells : []
-    }));
+      winningCells: winningCells
+    };
+
+    this.props.updateGameState(newGameState);
   };
 
-  return (
-    <div className="game-container">
-      <div className={`player-info ${currentPlayer === 1 ? 'active' : ''}`}>
-        <h3>Player 1 ({player1.category})</h3>
-        <div className="emoji-list">
-          {player1.emojis.map((emoji, i) => (
-            <span key={`p1-emoji-${i}`}>{emoji}</span>
+  render() {
+    const { gameState } = this.props;
+    const { currentPlayer, player1, player2, board } = gameState;
+
+    if (!board) return null;
+
+    return (
+      <div className="game-container">
+        <div className={`player-info player-${currentPlayer} ${currentPlayer === 1 ? 'active' : ''}`}>
+          <h3>Player 1 ({player1.category})</h3>
+          <div className="emoji-list">
+            {player1.emojis.map((emoji, i) => (
+              <span key={`p1-emoji-${i}`}>{emoji}</span>
+            ))}
+          </div>
+        </div>
+        
+        <div className="board">
+          {board.map((cell, index) => (
+            <Cell
+              key={index}
+              value={cell}
+              onClick={() => this.handleCellClick(index)}
+              isWinningCell={gameState.winningCells.includes(index)}
+            />
           ))}
         </div>
-      </div>
-      
-      <div className="board">
-        {board.map((cell, index) => (
-          <Cell
-            key={index}
-            value={cell}
-            onClick={() => handleCellClick(index)}
-            isWinningCell={gameState.winningCells.includes(index)}
-          />
-        ))}
-      </div>
-      
-      <div className={`player-info ${currentPlayer === 2 ? 'active' : ''}`}>
-        <h3>Player 2 ({player2.category})</h3>
-        <div className="emoji-list">
-          {player2.emojis.map((emoji, i) => (
-            <span key={`p2-emoji-${i}`}>{emoji}</span>
-          ))}
+        
+        <div className={`player-info player-${currentPlayer} ${currentPlayer === 2 ? 'active' : ''}`}>
+          <h3>Player 2 ({player2.category})</h3>
+          <div className="emoji-list">
+            {player2.emojis.map((emoji, i) => (
+              <span key={`p2-emoji-${i}`}>{emoji}</span>
+            ))}
+          </div>
         </div>
       </div>
-    </div>
-  );
-};
+    );
+  }
+}
 
 export default Board;
