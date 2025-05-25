@@ -29,6 +29,8 @@ class PlayerSelection extends React.Component {
     return (
       <div className="category-selection">
         <h2>Select Emoji Categories</h2>
+        
+        {/* Player 1 Selection */}
         <div className="player-selection">
           <h3>Player 1 Category:</h3>
           <div className="category-options">
@@ -37,6 +39,7 @@ class PlayerSelection extends React.Component {
                 key={`p1-${category}`}
                 className={player1Category === category ? 'selected' : ''}
                 onClick={() => this.handleCategoryChange(1, category)}
+                disabled={player2Category === category}
               >
                 {emojiCategories[category][0]} {category}
               </button>
@@ -44,6 +47,8 @@ class PlayerSelection extends React.Component {
           </div>
           {!player1Category && <p className="selection-hint">Please select a category</p>}
         </div>
+        
+        {/* Player 2 Selection */}
         <div className="player-selection">
           <h3>Player 2 Category:</h3>
           <div className="category-options">
@@ -52,6 +57,7 @@ class PlayerSelection extends React.Component {
                 key={`p2-${category}`}
                 className={player2Category === category ? 'selected' : ''}
                 onClick={() => this.handleCategoryChange(2, category)}
+                disabled={player1Category === category}
               >
                 {emojiCategories[category][0]} {category}
               </button>
@@ -59,6 +65,7 @@ class PlayerSelection extends React.Component {
           </div>
           {!player2Category && <p className="selection-hint">Please select a category</p>}
         </div>
+        
         <button 
           className="start-button" 
           onClick={this.startGame}
